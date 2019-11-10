@@ -11,7 +11,6 @@
 //
 
 #define GPIO_TEMP 2
-#define GPIO_LED 0
 
 #define SSID "ssid"
 #define PASS "password"
@@ -22,7 +21,6 @@
 //
 
 void handleRoot();
-void handleControl();
 void handleStatus();
 void handleNotFound();
 
@@ -32,7 +30,6 @@ void handleNotFound();
 
 ESP8266WebServer server(80);
 SimpleDHT11 dht(GPIO_TEMP);
-bool ledState = false;
 
 //
 // Setup function, called once at startup
@@ -50,8 +47,7 @@ void setup()
     // Set up GPIO pins
     //
 
-    pinMode(GPIO_TEMP, INPUT);
-    pinMode(GPIO_LED, OUTPUT);
+    dht.setPinInputMode(INPUT_PULLUP);
    
     //
     // Connect to WiFi network
@@ -106,7 +102,6 @@ void setup()
     //
   
     server.on("/", handleRoot);
-    server.on("/control", handleControl);
     server.on("/status", handleStatus);
     server.onNotFound(handleNotFound);
     server.begin();
@@ -170,51 +165,6 @@ void handleRoot()
 }
 
 //
-// Callback for control endpoint
-//
-void handleControl()
-{
-    int pin = 0;
-    bool state = false;
-
-    printRequest();
-
-    //
-    // Toggle LED
-    //
-
-    if (!server.hasArg("pin"))
-    {
-        server.send(400);
-        return;
-    }
-
-    pin = server.arg("pin").toInt();
-    if (pin != GPIO_LED)
-    {
-        server.send(400);
-        return;
-    }
-
-    if (!server.hasArg("state"))
-    {
-        if (pin == GPIO_LED)
-        {
-            ledState = !ledState;
-            state = ledState;
-        }
-    }
-    else
-    {
-        state = server.arg("state").toInt() != 0;
-    }
-
-    digitalWrite(pin, state);
-
-    server.send(200);
-}
-
-//
 // Callback for status endpoint
 //
 void handleStatus()
@@ -252,11 +202,10 @@ void handleStatus()
     //
 
     sprintf(buf,
-            "{\"temperature\":%f, \"humidity\":%f, \"error\":%d, \"ledActive\":%s, \"hostName\":\"%s\", \"macAddress\":\"%s\", \"networkSSID\":\"%s\", \"ipAddress\":\"%s\", \"subnetMask\":\"%s\", \"gatewayAddress\":\"%s\"}",
+            "{\"temperature\":%f, \"humidity\":%f, \"error\":%d, \"hostName\":\"%s\", \"macAddress\":\"%s\", \"networkSSID\":\"%s\", \"ipAddress\":\"%s\", \"subnetMask\":\"%s\", \"gatewayAddress\":\"%s\"}",
             temperature,
             humidity,
             error,
-            ledState ? "true" : "false",
             HOST,
             WiFi.macAddress().c_str(),
             SSID,

@@ -6,19 +6,6 @@ const char *HTML = R"EOF(
         <link href='https://cdnjs.cloudflare.com/ajax/libs/bootswatch/4.3.1/darkly/bootstrap.min.css' rel='stylesheet'>
     </head>
     <script type='text/javascript'>
-        function controlPin(pin, state) {
-            var uri = '/control?pin=' + pin;
-            if (state != undefined) {
-                uri += '&state=' + state;
-            }
-
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', uri);
-            xhr.send();
-
-            refreshStatus();
-        }
-
         function refreshStatus() {
             var xhr = new XMLHttpRequest();
             xhr.open('GET', '/status');
@@ -47,14 +34,14 @@ const char *HTML = R"EOF(
 
             var statusCard = document.getElementById('statusCard');
             var greenHtml = '<span class=\'badge badge-success\'>';
+            var blueHtml = '<span class=\'badge badge-info\'>';
             var redHtml = '<span class=\'badge badge-danger\'>';
             var endHtml = '</span>';
             var statusHtml = '';
 
-            statusHtml += 'Temperature: ' + greenHtml + status.temperature.toFixed(2) + ' &deg;C' + endHtml + '&nbsp;';
-            statusHtml += greenHtml + ((status.temperature * 9/5) + 32).toFixed(2) + ' &deg;F' + endHtml + '<br>\n';
-            statusHtml += 'Humidity: ' + greenHtml + status.humidity.toFixed(2) + ' %RH' + endHtml + '<br>\n';
-            statusHtml += 'LED state: ' + (status.ledActive ? greenHtml + 'ON' + endHtml : redHtml + 'OFF' + endHtml) + '<p>\n';
+            statusHtml += 'Temperature: ' + greenHtml + status.temperature.toFixed(0) + ' &deg;C' + endHtml + '&nbsp;';
+            statusHtml += blueHtml + ((status.temperature * 9/5) + 32).toFixed(0) + ' &deg;F' + endHtml + '<br>\n';
+            statusHtml += 'Humidity: ' + greenHtml + status.humidity.toFixed(0) + ' %RH' + endHtml + '<br>\n';
 
             statusHtml += 'Hostname: ' + status.hostName + '<br>\n';
             statusHtml += 'MAC address: ' + status.macAddress + '<br>\n';
@@ -82,12 +69,6 @@ const char *HTML = R"EOF(
                 <div class='card-body'>
                     <h4 class='card-title'>Status</h4>
                     <div id='statusCard' class='card-text'>Loading...</div>
-                </div>
-            </div>
-            <div class='card mb-3'>
-                <div class='card-body'>
-                    <h4 class='card-title'>Control</h4>
-                    <button class='btn btn-primary mr-3' onclick='controlPin(0);'>Toggle LED</button>
                 </div>
             </div>
         </div>
